@@ -36,6 +36,7 @@
 
 'use strict';
 
+// 通过 process.versions.node 获取当前 Node.js 的版本
 const currentNodeVersion = process.versions.node;
 const semver = currentNodeVersion.split('.');
 const major = semver[0];

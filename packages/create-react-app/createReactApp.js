@@ -31,6 +31,9 @@
 
 const https = require('https');
 const chalk = require('chalk');
+/**
+ * commander 是一个用于构建命令行应用程序的Node.js库，它使用户能够很容易地定义命令、选项和参数。
+ */
 const commander = require('commander');
 const dns = require('dns');
 const envinfo = require('envinfo');
@@ -55,14 +58,48 @@ function isUsingYarn() {
 
 let projectName;
 
+/**
+ * 入口文件
+ * @returns 
+ */
 function init() {
+  /**
+   * 创建命令对象:
+   * 使用 commander.Command 创建一个新的命令行工具，其名称设置为 packageJson.name。
+   * 这里的packageJson.name就是create-react-app。
+   * 所以我们可以直接在命令行中使用create-react-app来执行这个命令行工具。
+   */
   const program = new commander.Command(packageJson.name)
+    // 设置版本号
     .version(packageJson.version)
+    /**
+     * 使用 .arguments() 方法定义命令行需要接受的参数，这里是 <project-directory>。
+     */
     .arguments('<project-directory>')
+    /**
+     * 使用 .usage() 方法定义如何使用这个命令行工具，包括任何选项。
+     * 这里是 create-react-app <project-directory> [options]。
+     * 其中chalk.green()是一个颜色库，用于设置文本颜色。
+     * chalk.green('<project-directory>')表示<project-directory>文本颜色为绿色。
+     * 示例图如下：
+     * @/docs/chalkUse.png
+     */
     .usage(`${chalk.green('<project-directory>')} [options]`)
+    /**
+     * 使用 .action() 方法定义当 <project-directory> 参数被提供时执行的回调函数，
+     * 这里将参数赋值给 projectName 变量。
+     */
     .action(name => {
       projectName = name;
     })
+    /**
+     * 使用 .option() 方法定义命令行工具可以接受的选项，包括：
+     * --verbose 打印额外的日志。
+     * --info 打印环境调试信息。
+     * --scripts-version 使用非标准版本的 react-scripts。
+     * --template 指定创建项目时使用的模板。
+     * --use-pnp 选项，可能与 Yarn Plug'n'Play 有关。
+     */
     .option('--verbose', 'print additional logs')
     .option('--info', 'print environment debug info')
     .option(
@@ -74,7 +111,13 @@ function init() {
       'specify a template for the created project'
     )
     .option('--use-pnp')
+    /**
+     * 使用 .allowUnknownOption() 允许命令行解析未知选项，不抛出错误。
+     */
     .allowUnknownOption()
+    /**
+     * 使用 .on('--help') 方法定义当用户使用 --help 选项时显示的帮助信息。
+     */
     .on('--help', () => {
       console.log(
         `    Only ${chalk.green('<project-directory>')} is required.`
@@ -141,14 +184,35 @@ function init() {
       );
       console.log();
     })
+    /**
+     * 使用 .parse() 方法解析 process.argv，这是Node.js中包含命令行参数的数组。
+     */
     .parse(process.argv);
 
+  /**
+   * 这段代码是一个条件语句，用于在命令行程序中处理 --info 选项。
+   * 当用户在命令行中使用 --info 选项时，这段代码会执行并打印出环境信息。
+   * if (program.info) 检查 commander 实例的 info 属性。
+   * 如果用户在命令行中包含了 --info 选项，program.info 将为 true。
+   */
   if (program.info) {
     console.log(chalk.bold('\nEnvironment Info:'));
     console.log(
       `\n  current version of ${packageJson.name}: ${packageJson.version}`
     );
     console.log(`  running from ${__dirname}`);
+    /**
+     * 使用 envinfo 库来收集并打印详细的环境信息。
+     * envinfo.run() 方法接受两个参数：要收集的信息的类别和选项。
+     * 第一个参数是一个对象，指定了要收集的系统信息和二进制文件。
+     * 例如，System: ['OS', 'CPU'] 表示收集操作系统和CPU信息，
+     * Binaries: ['Node', 'npm', 'Yarn'] 表示收集Node.js、npm和Yarn的版本信息。
+     * Browsers 数组指定了要检查的浏览器列表。
+     * npmPackages 数组指定了要列出的npm包名称。
+     * npmGlobalPackages 数组指定了要列出的全局npm包名称。
+     * 第二个参数是一个对象，包含 envinfo 的选项。
+     * duplicates: true 表示显示重复的包，showNotFound: true 表示显示未找到的包。
+     */
     return envinfo
       .run(
         {
@@ -168,7 +232,8 @@ function init() {
           duplicates: true,
           showNotFound: true,
         }
-      )
+    )
+      // then(console.log) 将 envinfo.run() 方法的Promise结果输出到控制台。
       .then(console.log);
   }
 
